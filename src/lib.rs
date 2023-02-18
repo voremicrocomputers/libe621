@@ -11,11 +11,13 @@ pub fn add(left: usize, right: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use crate::database::BulgeDB;
     use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn list_glib_deps() {
+        let db = BulgeDB::from_file("/etc/bulge/databases/bulge.db").expect("Failed to open database");
+        let deps = db.find_and_order_dependents_of_package("glib2").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
+        println!("{:#?}", deps);
     }
 }

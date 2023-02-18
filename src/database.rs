@@ -213,6 +213,8 @@ impl BulgeDB {
     /// The list is sorted as a flattened tree, with the first element being the
     /// package that all others depend on, and the last element being a package
     /// that no other package depends on.
+    /// If circular dependencies are found, they will be listed twice or more in the order required to resolve them.
+    /// Note that this operation may take some time as it needs to query the database to find all dependents.
     /// Example:
     /// ```rust
     /// use libe621::database::BulgeDB;
@@ -221,19 +223,15 @@ impl BulgeDB {
     /// println!("{:#?}", deps);
     /// ```
     pub fn find_and_order_dependents_of_package(&self, name: impl Into<String>) -> Vec<&Package> {
-        let name = name.into();
         let mut dependents = Vec::new();
-        let mut visited = HashSet::new();
-        let mut to_visit = vec![name];
-        while let Some(package_name) = to_visit.pop() {
-            if visited.contains(&*package_name) {
-                continue;
-            }
-            visited.insert(package_name.clone());
+        let mut stack = vec![name.into()];
+        let mut last_package = stack.last().unwrap().clone(); // used so that we don't have tons of the same package in a row
+        while let Some(name) = stack.pop() {
             for p in &self.installed_packages {
-                if p.dependencies.contains(&package_name) {
+                if p.dependencies.iter().any(|x| x == &name) && last_package != p.name {
                     dependents.push(p);
-                    to_visit.push(p.name.clone());
+                    stack.push(p.name.clone());
+                    last_package = p.name.clone();
                 }
             }
         }

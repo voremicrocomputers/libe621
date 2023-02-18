@@ -213,6 +213,13 @@ impl BulgeDB {
     /// The list is sorted as a flattened tree, with the first element being the
     /// package that all others depend on, and the last element being a package
     /// that no other package depends on.
+    /// Example:
+    /// ```rust
+    /// use libe621::database::BulgeDB;
+    /// let db = BulgeDB::from_file("/etc/bulge/databases/bulge.db").expect("Failed to open database");
+    /// let deps = db.find_and_order_dependents_of_package("glib2").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
+    /// println!("{:#?}", deps);
+    /// ```
     pub fn find_and_order_dependents_of_package(&self, name: impl Into<String>) -> Vec<&Package> {
         let name = name.into();
         let mut dependents = Vec::new();

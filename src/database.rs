@@ -222,13 +222,15 @@ impl BulgeDB {
     /// let deps = db.find_and_order_dependents_of_package("glib2").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
     /// println!("{:#?}", deps);
     /// ```
-    pub fn find_and_order_dependents_of_package(&self, name: impl Into<String>) -> Vec<&Package> {
+    pub fn find_and_order_dependents_of_package(&self, name: impl Into<String> + Clone) -> Vec<&Package> {
         let mut dependents = Vec::new();
-        let mut stack = vec![name.into()];
+        let mut stack = vec![name.clone().into()];
         let mut last_package = stack.last().unwrap().clone(); // used so that we don't have tons of the same package in a row
+        let mut forbidden = HashSet::new(); // used to prevent circular dependencies from causing an infinite loop
         while let Some(name) = stack.pop() {
+            forbidden.insert(name.clone());
             for p in &self.installed_packages {
-                if p.dependencies.iter().any(|x| x == &name) && last_package != p.name {
+                if p.dependencies.iter().any(|x| x == &name) && last_package != p.name && !forbidden.contains(&p.name) {
                     dependents.push(p);
                     stack.push(p.name.clone());
                     last_package = p.name.clone();

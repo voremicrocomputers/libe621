@@ -239,4 +239,25 @@ impl BulgeDB {
         }
         dependents
     }
+
+    /// Returns a list of packages whose files match the given filename
+    /// Example:
+    /// ```rust
+    /// use libe621::database::BulgeDB;
+    /// let db = BulgeDB::from_file("/etc/bulge/databases/bulge.db").expect("Failed to open database");
+    /// let by_single = db.find_packages_by_filename("libglib-2.0.so.0").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
+    /// let by_fullpath = db.find_packages_by_filename("/usr/lib/libglib-2.0.so.0").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
+    /// println!("{:#?}", by_single);
+    /// println!("{:#?}", by_fullpath);
+    /// ```
+    pub fn find_packages_by_filename(&self, filename: impl Into<String>) -> Vec<&Package> {
+        let filename = filename.into();
+        let mut packages = Vec::new();
+        for p in &self.installed_packages {
+            if p.installed_files.iter().any(|x| x == &filename || x.ends_with(&filename)) {
+                packages.push(p);
+            }
+        }
+        packages
+    }
 }

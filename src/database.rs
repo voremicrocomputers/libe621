@@ -219,7 +219,7 @@ impl BulgeDB {
     /// ```rust
     /// use libe621::database::BulgeDB;
     /// let db = BulgeDB::from_file("/etc/bulge/databases/bulge.db").expect("Failed to open database");
-    /// let deps = db.find_and_order_dependents_of_package("glib2").iter().map(|x| x.name.clone()).collect::<Vec<String>>();
+    /// let deps = db.find_and_order_dependents_of_package("glib2", None).iter().map(|x| x.name.clone()).collect::<Vec<String>>();
     /// println!("{:#?}", deps);
     /// ```
     pub fn find_and_order_dependents_of_package(&self, name: impl Into<String> + Clone, depth: Option<usize>) -> Vec<Package> {
